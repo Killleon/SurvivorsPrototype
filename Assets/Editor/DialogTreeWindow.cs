@@ -159,20 +159,28 @@ public class DialogTreeWindow : EditorWindow
 
 
 
-
-       
-        BeginWindows();
-        for (int i = 0; i < nodes.Count; i++)
+        try
         {
-            nodes[i].m_rWindow = GUI.Window(i + 1, nodes[i].m_rWindow, DrawNodeWindow, "Dialog" + i);
-            for (int j = 0; j < nodes[i].m_Connect.Count; j++)
+            BeginWindows();
+            for (int i = 0; i < nodes.Count; i++)
             {
-                DrawNodeCurve(nodes[i].m_Connect[j].m_rWindow, nodes[i].m_rWindow);
+                nodes[i].m_rWindow = GUI.Window(i + 1, nodes[i].m_rWindow, DrawNodeWindow, "Dialog" + i);
+                for (int j = 0; j < nodes[i].m_Connect.Count; j++)
+                {
+                    DrawNodeCurve(nodes[i].m_Connect[j].m_rWindow, nodes[i].m_rWindow);
+                }
             }
+
+            EndWindows();
+        }
+        catch
+        {
+            nodes = new List<NodeWindow>();
+            AddTreeToNodeWindow(currentDialogTree.root, new Vector2(0, 200));
         }
 
-        EndWindows();
-       
+        
+
 
 
 

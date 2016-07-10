@@ -8,7 +8,7 @@ public class DialogTreeEditor : Editor {
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
-        //DrawDefaultInspector();
+        DrawDefaultInspector();
         GUILayout.Label("Editor for the Dialog Tree");
         GUILayout.Space(10f);
         if(GUILayout.Button("Open Editor"))

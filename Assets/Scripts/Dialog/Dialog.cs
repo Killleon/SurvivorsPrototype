@@ -42,7 +42,7 @@ public class Dialog {
         }
     }
     //Action - Method to run while show the text
-    [SerializeField]
+   
     public DialogEvent m_Method;
     public DialogEvent DialogMethod
     {
@@ -75,7 +75,7 @@ public class Dialog {
     }
     
     //Options
-    
+    [SerializeField]
     private List<DialogOptions> m_Options = new List<DialogOptions>();
     public List<DialogOptions> Options
     {
@@ -139,14 +139,3 @@ public class DialogEvent:UnityEvent
 }
 
 
-public class DialogOptions
-{
-    public string m_Option;
-    public Dialog m_Dialog;
-
-    public DialogOptions(string options,Dialog dialog)
-    {
-        m_Option = options;
-        m_Dialog = dialog;
-    }
-}
