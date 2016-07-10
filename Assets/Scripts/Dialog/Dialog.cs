@@ -43,14 +43,14 @@ public class Dialog {
     }
     //Action - Method to run while show the text
     [SerializeField]
-    public UnityEvent m_Method;
-    public UnityEvent DialogMethod
+    public DialogEvent m_Method;
+    public DialogEvent DialogMethod
     {
         get
         {
             if(m_Method == null)
             {
-                m_Method = new UnityEvent();
+                m_Method = new DialogEvent();
             }
             return m_Method;
         }
@@ -131,6 +131,14 @@ public class Dialog {
         return dialog;
     }
 }
+
+[System.Serializable]
+public class DialogEvent:UnityEvent
+{
+
+}
+
+
 public class DialogOptions
 {
     public string m_Option;

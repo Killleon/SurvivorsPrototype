@@ -16,16 +16,22 @@ public class DialogTreeWindow : EditorWindow
 
     List<NodeWindow> nodes = new List<NodeWindow>();
     NodeWindow nodeClick;
-    Vector2 scroll;
+    Vector2 scroll = new Vector2(0, 0);
+    Vector2 nodeScroll = new Vector2(0, 0);
     Rect infoWindow;
 
     //Informations
     string charName = "";
     string message = "";
-    UnityEvent methods;
+    public DialogEvent methods;
+
+    bool fade = false;
+    float fadeAnim = 0;
+
+    string[] options;
 
     string[] controls = { "NameField", "MessageField", "MethodField" };
-
+    Event e;
     int controlIndex = 0;
 
     public static void OpenWindow(DialogTree dialogTree)
@@ -34,7 +40,7 @@ public class DialogTreeWindow : EditorWindow
         dialogWindow = (DialogTreeWindow)EditorWindow.GetWindow<DialogTreeWindow>();
         dialogWindow.Focus();
         Debug.Log(dialogWindow.position);
-        dialogWindow.position = new Rect(100, 100, 500, 500);
+        dialogWindow.position = new Rect(100, 100, 1000, 500);
         dialogWindow.maxSize = new Vector2(1000, 1000);
         dialogWindow.Show();
         if (dialogTree.root == null)
@@ -44,13 +50,14 @@ public class DialogTreeWindow : EditorWindow
         currentDialogTree = dialogTree;
         dialogWindow.Init(dialogWindow.position.size);
     }
-    Event e;
+    
     public void Init(Vector2 size)
     {
         e = Event.current;
+        nodes = currentDialogTree.nodes;
         if (nodes.Count == 0)
         {
-            AddTreeToNodeWindow(currentDialogTree.root, Vector2.zero);
+            AddTreeToNodeWindow(currentDialogTree.root, new Vector2(0,200));
 
         }
         infoWindow = new Rect(size.x - 300, 100, 300, size.y);
@@ -96,7 +103,8 @@ public class DialogTreeWindow : EditorWindow
 
     void OnGUI()
     {
-        GUILayout.BeginVertical();
+        GUILayout.BeginArea(new Rect(0, 0, dialogWindow.position.size.x, 150));
+        scroll = GUILayout.BeginScrollView(scroll, false, true);
         GUILayout.BeginHorizontal();
         if (!drawMode && GUILayout.Button("Draw Node: Off"))
         {
@@ -110,8 +118,8 @@ public class DialogTreeWindow : EditorWindow
         DrawInfoWindow(0);
         GUILayout.EndVertical();
         GUILayout.EndHorizontal();
-        GUILayout.FlexibleSpace();
-
+        GUILayout.EndScrollView();
+        GUILayout.EndArea();
         if (e.type == EventType.mouseDown)
         {
             mouseDown = new Rect(e.mousePosition, new Vector2(0, 0));
@@ -152,7 +160,7 @@ public class DialogTreeWindow : EditorWindow
 
 
 
-
+       
         BeginWindows();
         for (int i = 0; i < nodes.Count; i++)
         {
@@ -164,9 +172,10 @@ public class DialogTreeWindow : EditorWindow
         }
 
         EndWindows();
+       
 
 
-        GUILayout.EndVertical();
+
 
 
 
@@ -183,12 +192,30 @@ public class DialogTreeWindow : EditorWindow
         charName = nodeClick.m_Dialog.Name;
         message = nodeClick.m_Dialog.Message;
         methods = nodeClick.m_Dialog.DialogMethod;
+        options = GetOptionsName();
     }
     void ApplyInformations()
     {
         nodeClick.m_Dialog.Name = charName;
         nodeClick.m_Dialog.Message = message;
         nodeClick.m_Dialog.DialogMethod = methods;
+        SetOptionsName();
+    }
+    string[] GetOptionsName()
+    {
+        List<string> names = new List<string>();
+        foreach(DialogOptions op in nodeClick.m_Dialog.Options)
+        {
+            names.Add(op.m_Option);
+        }
+        return names.ToArray();
+    }
+    void SetOptionsName()
+    {
+        for(int i=0;i< nodeClick.m_Dialog.Options.Count;i++)
+        {
+            nodeClick.m_Dialog.Options[i].m_Option = options[i];
+        }
     }
 
     void DrawNodeWindow(int id)
@@ -212,23 +239,29 @@ public class DialogTreeWindow : EditorWindow
 
             try
             {
-
+                
                 GUILayout.Label("Name: ");
-                GUI.SetNextControlName(controls[0]);
+               
                 charName = GUILayout.TextField(charName);
 
                 GUILayout.Label("Messege:");
-                GUI.SetNextControlName(controls[1]);
+               
                 message = GUILayout.TextArea(message);
 
+                for (int i = 0; i < options.Length; i++)
+                {
+                    GUILayout.Label(string.Format("Option {0}: ",i));
+                    options[i] = GUILayout.TextField(options[i]);
+                }
 
+                GUILayout.Label("On Talk Event:");
+                SerializedObject so = new SerializedObject(this);
+                SerializedProperty sp = so.FindProperty("methods");
+               
 
-                SerializedObject so = new SerializedObject(nodeClick);
-                SerializedProperty sp = so.FindProperty("m_Dialog");
-                //sp.Next(false);
-                GUI.SetNextControlName(controls[2]);
-                EditorGUILayout.PropertyField(sp, true);
+                EditorGUILayout.PropertyField(sp);
                 so.ApplyModifiedProperties();
+
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Reset"))
                 {
@@ -239,6 +272,9 @@ public class DialogTreeWindow : EditorWindow
                     ApplyInformations();
                 }
                 GUILayout.EndHorizontal();
+
+                
+
             }
             catch
             {
@@ -287,11 +323,4 @@ public class DialogTreeWindow : EditorWindow
 
 }
 
-public class NodeWindow : ScriptableObject
-{
-    public Rect m_rWindow;
 
-    public Dialog m_Dialog;
-
-    public List<NodeWindow> m_Connect = new List<NodeWindow>();
-}
